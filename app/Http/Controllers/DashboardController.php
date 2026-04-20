@@ -3,25 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bin;
+use App\Models\Worker;
+use App\Models\SortingLog;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index()
-    {
-        // Ambil semua data tong sampah (Organik, Anorganik, Logam)
-        $bins = Bin::all();
+ public function index()
+{
+    // Mengambil data tong sampah (GZB-004)
+    $bins = Bin::all();
 
-        // Hitung total ekonomi (Asumsi sederhana: Kapasitas 1% = 0.1kg)
-        $totalEkonomi = 0;
-        foreach ($bins as $bin) {
-            $beratEstimasi = $bin->capacity * 0.1; 
-            $totalEkonomi += ($beratEstimasi * $bin->price_per_kg);
-        }
+    // Mengambil log pemilahan terakhir (GZB-006)
+    $recentLogs = \App\Models\SortingLog::latest()->take(5)->get();
 
-        return view('dashboard', compact('bins', 'totalEkonomi'));
+    // Logika Estimasi Nilai Ekonomi (Activity 13)
+    // Rumus: Kapasitas(%) * 0.5kg (asumsi) * Harga/Kg
+    $totalEkonomi = 0;
+    foreach($bins as $bin) {
+        $totalEkonomi += ($bin->capacity * 0.5 * $bin->price_per_kg);
     }
 
+    return view('dashboard', compact('bins', 'recentLogs', 'totalEkonomi'));
+}
     public function updateHarga(Request $request, $id)
     {
         $bin = Bin::findOrFail($id);

@@ -1,113 +1,112 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SORTIR.IN - Smart Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
+@section('content')
+<div class="space-y-6">
+    <!-- GZB-007: Notifikasi Jika Sensor Error (Activity 11) -->
+    @foreach($bins as $bin)
+        @if(!$bin->sensor_status)
+        <div class="bg-red-600 text-white p-4 rounded-xl shadow-lg flex items-center justify-between animate-pulse">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-exclamation-triangle text-xl"></i>
+                <div>
+                    <p class="font-bold">SENSOR ERROR (GZB-007)</p>
+                    <p class="text-sm">Sensor pada wadah <strong>{{ $bin->type }}</strong> bermasalah. Segera cek alat!</p>
+                </div>
+            </div>
+            <button class="bg-white text-red-600 px-4 py-1 rounded-lg font-bold text-xs">LOG ERROR</button>
+        </div>
+        @endif
+    @endforeach
 
-<body class="bg-gray-50 font-sans">
+   <!-- Bagian Monitoring Kapasitas (GZB-004) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+    @foreach($bins as $bin)
+    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center">
+        <!-- Judul Kategori -->
+        <h3 class="text-lg font-bold text-gray-700 mb-6 uppercase tracking-widest">{{ $bin->type }}</h3>
 
-    <!-- Sidebar & Main Content Wrapper -->
-    <div class="flex min-h-screen">
-        <!-- Sidebar Sederhana -->
-        <div class="w-64 bg-green-800 text-white p-6 shadow-xl">
-            <h1 class="text-2xl font-bold mb-10 flex items-center gap-2">
-                <i class="fas fa-recycle"></i> SORTIR.IN
-            </h1>
-            <nav class="space-y-4">
-                <a href="#" class="block py-2.5 px-4 rounded bg-green-700 transition">Dashboard</a>
-                <a href="#" class="block py-2.5 px-4 rounded hover:bg-green-700 transition">Data Pekerja</a>
-                <a href="#" class="block py-2.5 px-4 rounded hover:bg-green-700 transition">Riwayat Sampah</a>
-                <a href="#" class="block py-2.5 px-4 rounded hover:bg-green-700 transition">Laporan PDF</a>
-            </nav>
+        <!-- VISUALISASI TONG SAMPAH -->
+        <div class="relative w-32 h-48 border-4 border-gray-300 rounded-b-2xl flex flex-col-reverse overflow-hidden bg-gray-50 shadow-inner">
+            <!-- Tutup Tong (Lid) -->
+            <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-36 h-3 bg-gray-400 rounded-full z-10 shadow-md"></div>
+            
+            <!-- Isi Sampah (Liquid Effect) -->
+            <div class="transition-all duration-1000 ease-in-out w-full {{ $bin->capacity > 85 ? 'bg-red-500' : ($bin->type == 'Organik' ? 'bg-green-500' : ($bin->type == 'Anorganik' ? 'bg-blue-500' : 'bg-yellow-500')) }}" 
+                 style="height: {{ $bin->capacity }}%">
+                
+                <!-- Efek Kilap/Buih (Opsional) -->
+                <div class="absolute top-0 left-0 w-full h-2 bg-white/20"></div>
+            </div>
+
+            <!-- Teks Persentase di Tengah Tong -->
+            <div class="absolute inset-0 flex items-center justify-center">
+                <span class="text-2xl font-black {{ $bin->capacity > 50 ? 'text-white' : 'text-gray-400' }} drop-shadow-md">
+                    {{ $bin->capacity }}%
+                </span>
+            </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="flex-1 p-10">
-            <!-- Header -->
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h2 class="text-3xl font-bold text-gray-800">Dashboard Monitoring</h2>
-                    <p class="text-gray-500">Pantau pemilahan sampah secara real-time</p>
+        <!-- Indikator Status Bawah -->
+        <div class="mt-6 text-center">
+            @if($bin->capacity > 85)
+                <span class="px-4 py-1 bg-red-100 text-red-600 rounded-full text-xs font-bold animate-bounce block">
+                    ⚠️ PENUH!
+                </span>
+            @else
+                <span class="px-4 py-1 bg-green-100 text-green-600 rounded-full text-xs font-bold block">
+                    Tersedia
+                </span>
+            @endif
+
+            <!-- Form Edit Harga (GZB-012) -->
+            <form action="{{ route('update.harga', $bin->id) }}" method="POST" class="mt-4 flex items-center gap-2">
+                @csrf
+                <div class="relative">
+                    <span class="absolute left-2 top-1 text-[10px] text-gray-400 font-bold">Rp</span>
+                    <input type="number" name="price" value="{{ $bin->price_per_kg }}" 
+                           class="w-24 pl-6 pr-2 py-1 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-green-500 outline-none">
                 </div>
-                <div class="flex items-center gap-4">
-                    <span
-                        class="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-bold">
-                        <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span> IoT Online
-                    </span>
-                    <i class="fas fa-user-circle text-3xl text-gray-400"></i>
-                </div>
-            </div>
-
-            <!-- GZB-007: Notifikasi Error Sensor -->
-            @foreach($bins as $bin)
-                @if(!$bin->sensor_status)
-                    <div
-                        class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-r-lg shadow-sm flex items-center gap-3">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span><strong>Sensor Error:</strong> Sensor pada bagian <strong>{{ $bin->type }}</strong> tidak
-                            terdeteksi!</span>
-                    </div>
-                @endif
-            @endforeach
-
-            <!-- Stats Kapasitas (GZB-004 & GZB-005) -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-                @foreach($bins as $bin)
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition">
-                        <div class="flex justify-between items-start mb-4">
-                            <h3 class="text-lg font-bold text-gray-700">{{ $bin->type }}</h3>
-                            <i class="fas fa-trash {{ $bin->capacity > 85 ? 'text-red-500' : 'text-green-500' }}"></i>
-                        </div>
-
-                        <div class="flex items-end gap-2 mb-2">
-                            <span class="text-4xl font-black">{{ $bin->capacity }}%</span>
-                            <span class="text-sm text-gray-400 mb-1">Kapasitas</span>
-                        </div>
-
-                        <!-- Progress Bar -->
-                        <div class="w-full bg-gray-100 h-4 rounded-full overflow-hidden">
-                            <div class="h-full transition-all duration-500 {{ $bin->capacity > 85 ? 'bg-red-500' : 'bg-green-500' }}"
-                                style="width: {{ $bin->capacity }}%"></div>
-                        </div>
-
-                        <!-- GZB-012: Edit Harga Sampah -->
-                        <form action="{{ route('update.harga', $bin->id) }}" method="POST"
-                            class="mt-6 pt-4 border-t border-gray-50">
-                            @csrf
-                            <label class="text-xs font-bold text-gray-400 uppercase">Harga/Kg (IDR)</label>
-                            <div class="flex gap-2 mt-1">
-                                <input type="number" name="price" value="{{ $bin->price_per_kg }}"
-                                    class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-500 outline-none">
-                                <button
-                                    class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition">Set</button>
-                            </div>
-                        </form>
-                    </div>
-                @endforeach
-            </div>
-
-            <!-- Estimasi Ekonomi (Activity Diagram 13) -->
-            <div
-                class="bg-gradient-to-r from-green-700 to-green-900 rounded-3xl p-8 text-white shadow-lg flex items-center justify-between">
-                <div>
-                    <h3 class="text-green-200 text-lg">Estimasi Nilai Ekonomi Terkumpul</h3>
-                    <p class="text-5xl font-black mt-2 tracking-tight">Rp
-                        {{ number_format($totalEkonomi, 0, ',', '.') }}</p>
-                    <p class="mt-4 text-sm text-green-300 italic">*Nilai ini otomatis berubah berdasarkan volume sampah
-                        di tong.</p>
-                </div>
-                <div class="hidden lg:block opacity-20">
-                    <i class="fas fa-coins text-[120px]"></i>
-                </div>
-            </div>
-
+                <button class="p-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                    <i class="fas fa-check text-[10px]"></i>
+                </button>
+            </form>
         </div>
     </div>
-</body>
+    @endforeach
+</div>
 
-</html>
+    <!-- Baris 2: Estimasi Ekonomi (GZB-012 & Activity 13) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-gradient-to-br from-green-700 to-green-900 p-8 rounded-3xl text-white shadow-xl flex flex-col justify-between">
+            <div>
+                <h3 class="text-green-200 font-medium">Estimasi Nilai Ekonomi (GZB-012)</h3>
+                <p class="text-5xl font-black mt-2 tracking-tighter">Rp {{ number_format($totalEkonomi, 0, ',', '.') }}</p>
+            </div>
+            <div class="mt-8 flex items-center gap-4 text-sm text-green-100">
+                <div class="bg-green-600/50 p-2 rounded-lg">
+                    <i class="fas fa-chart-line"></i> +12% dari kemarin
+                </div>
+                <p class="opacity-60 italic">*Berdasarkan input harga pasar terbaru</p>
+            </div>
+        </div>
+
+        <!-- Riwayat Singkat (GZB-006) -->
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+            <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-history text-green-600"></i> Riwayat Terakhir
+            </h3>
+            <div class="space-y-4">
+                @foreach($recentLogs as $log)
+                <div class="flex justify-between items-center border-b border-gray-50 pb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <span class="text-sm font-medium text-gray-700">{{ $log->waste_type }}</span>
+                    </div>
+                    <span class="text-xs text-gray-400">{{ $log->created_at->diffForHumans() }}</span>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

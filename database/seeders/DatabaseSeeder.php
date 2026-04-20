@@ -17,9 +17,11 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+        BinSeeder::class,
+        // WorkerSeeder::class, (jika sudah buat)
         ]);
+          \App\Models\Worker::create(['name' => 'Budi Santoso', 'nik' => 'TPS001', 'status' => 'Aktif']);
+    \App\Models\Worker::create(['name' => 'Siti Aminah', 'nik' => 'TPS002', 'status' => 'Aktif']);
     }
 }

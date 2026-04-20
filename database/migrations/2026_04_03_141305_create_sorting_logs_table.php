@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sorting_logs', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+      Schema::create('sorting_logs', function (Blueprint $table) {
+    $table->id();
+    $table->string('waste_type'); // Organik, Anorganik, Logam
+    $table->float('weight'); // Dalam Kg
+    $table->timestamps();
+});
     }
 
     /**
