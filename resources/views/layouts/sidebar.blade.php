@@ -11,7 +11,7 @@
     <!-- Navigation -->
     <div class="flex flex-col justify-between flex-1">
         <nav class="space-y-2">
-            <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Main Navigation</p>
+            <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Navigasi Utama</p>
             
             <!-- 1. MENU KHUSUS OPERATOR TPS -->
             @if(Auth::user()->role == 'tps')
@@ -25,19 +25,19 @@
                 <a href="{{ route('history.index') }}" 
                    class="flex items-center px-4 py-3 text-sm transition-all duration-200 {{ request()->routeIs('history.*') ? 'bg-white/10 rounded-2xl border border-white/10 text-white font-bold' : 'text-gray-400 hover:bg-white/5 rounded-2xl' }}">
                     <i class="fas fa-chart-pie w-5 text-center"></i>
-                    <span class="mx-4 font-medium">Analytics</span>
+                    <span class="mx-4 font-medium">Analisis</span>
                 </a>
 
                 <a href="{{ route('workers.index') }}" 
                    class="flex items-center px-4 py-3 text-sm transition-all duration-200 {{ request()->routeIs('workers.*') ? 'bg-white/10 rounded-2xl border border-white/10 text-white font-bold' : 'text-gray-400 hover:bg-white/5 rounded-2xl' }}">
                     <i class="fas fa-user-friends w-5 text-center"></i>
-                    <span class="mx-4 font-medium">Team Structure</span>
+                    <span class="mx-4 font-medium">Tim Pekerja</span>
                 </a>
                 
                 <a href="{{ route('schedules.index') }}" 
                    class="flex items-center px-4 py-3 text-sm transition-all duration-200 {{ request()->routeIs('schedules.*') ? 'bg-white/10 rounded-2xl border border-white/10 text-white font-bold' : 'text-gray-400 hover:bg-white/5 rounded-2xl' }}">
                     <i class="fas fa-file-alt w-5 text-center"></i>
-                    <span class="mx-4 font-medium">Reports</span>
+                    <span class="mx-4 font-medium">Laporan</span>
                 </a>
             @endif
 
@@ -70,7 +70,7 @@
                 @csrf
                 <button type="submit" class="w-full flex items-center px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 rounded-2xl transition group">
                     <i class="fas fa-sign-out-alt w-5 text-center group-hover:translate-x-1 transition-transform"></i>
-                    <span class="mx-4 font-bold">Sign Out</span>
+                    <span class="mx-4 font-bold">Keluar</span>
                 </button>
             </form>
         </div>

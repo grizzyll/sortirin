@@ -14,7 +14,7 @@
         <header class="flex items-center justify-between px-10 py-6">
             <h1 class="text-2xl font-bold">Dashboard</h1>
             <button class="bg-[#121212] text-white px-5 py-2 rounded-xl text-xs font-bold shadow-lg">
-                Add Custom Widget
+                Tambahkan Menu
             </button>
         </header>
 

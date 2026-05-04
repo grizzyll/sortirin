@@ -5,11 +5,11 @@
     <!-- Header Section -->
     <div class="flex justify-between items-center mb-4">
         <div>
-            <h1 class="text-3xl font-black text-gray-800 tracking-tight">City-Wide Monitoring</h1>
+            <h1 class="text-3xl font-black text-gray-800 tracking-tight">Pengawasan Skala Kota</h1>
             <p class="text-sm text-gray-400 font-medium italic underline decoration-emerald-500">Macro Analysis (GZB-012) - Central TPA</p>
         </div>
         <div class="px-4 py-2 bg-[#0F2B26] rounded-2xl shadow-lg text-[10px] font-black uppercase tracking-widest text-emerald-400 flex items-center">
-            <i class="fas fa-city mr-2"></i> Role: Central Admin
+            <i class="fas fa-city mr-2"></i> Role: Admin Utama
         </div>
     </div>
 
@@ -17,22 +17,22 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <!-- Total Weight -->
         <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-50 flex flex-col justify-center">
-            <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Total Waste</p>
+            <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Total Sampah</p>
             <h3 class="text-3xl font-black text-gray-800">{{ $stats['total_berat'] }} <span class="text-xs">Kg</span></h3>
         </div>
         <!-- Total Economic -->
         <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-50 flex flex-col justify-center">
-            <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Total Economy</p>
+            <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Total Ekonomi</p>
             <h3 class="text-3xl font-black text-emerald-600">Rp {{ number_format($stats['ekonomi_total'], 0, ',', '.') }}</h3>
         </div>
         <!-- Total Workers -->
         <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-50 flex flex-col justify-center">
-            <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Global Workers</p>
+            <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Total Pekerja</p>
             <h3 class="text-3xl font-black text-gray-800">{{ $stats['total_pekerja'] }}</h3>
         </div>
         <!-- Active TPS -->
         <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-50 flex flex-col justify-center">
-            <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Active TPS</p>
+            <p class="text-[10px] font-black text-gray-400 uppercase mb-1">TPS Aktif</p>
             <h3 class="text-3xl font-black text-blue-500">{{ $stats['titik_tps'] }} <span class="text-xs">Points</span></h3>
         </div>
     </div>
@@ -41,7 +41,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Distribution Chart -->
         <div class="lg:col-span-1 bg-white p-8 rounded-[3rem] shadow-sm border border-gray-50 flex flex-col items-center">
-            <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest mb-10">Waste Distribution</h3>
+            <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest mb-10">Distribusi Sampah</h3>
             <div class="w-full max-w-[200px]">
                 <canvas id="tpaPieChart"></canvas>
             </div>
