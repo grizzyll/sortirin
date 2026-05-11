@@ -13,12 +13,12 @@
     <!-- Header Section -->
     <div class="flex justify-between items-center mb-4">
         <div>
-            <h1 class="text-3xl font-black text-gray-800 tracking-tight">Overview Monitoring</h1>
+            <h1 class="text-3xl font-black text-gray-800 tracking-tight">Ringkasan Monitoring</h1>
             <p class="text-sm text-gray-400 font-medium">Sistem Pemilahan Sampah Otomatis - TPS Mulyorejo</p>
         </div>
         <div class="px-4 py-2 bg-white rounded-2xl shadow-sm text-[10px] font-black uppercase tracking-widest text-gray-250 border border-gray-100 flex items-center">
             <span class="w-2 h-2 bg-green-500 rounded-full inline-block mr-2 animate-ping"></span> 
-            System Status: Connected
+            Status Sistem: Terhubung
         </div>
     </div>
 
@@ -27,9 +27,9 @@
         <!-- Estimasi Ekonomi (Activity 13) -->
         <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 flex items-center justify-between group hover:shadow-md transition-all">
             <div>
-                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Economic Value (GZB-012)</p>
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Nilai Ekonomi (GZB-012)</p>
                 <h3 class="text-4xl font-black text-gray-800 tracking-tighter">Rp {{ number_format($totalEkonomi, 0, ',', '.') }}</h3>
-                <p class="text-[10px] text-emerald-500 mt-2 font-bold italic"><i class="fas fa-chart-line mr-1"></i> Based on current bin capacity</p>
+                <p class="text-[10px] text-emerald-500 mt-2 font-bold italic"><i class="fas fa-chart-line mr-1"></i> Berdasarkan kapasitas wadah saat ini</p>
             </div>
             <div class="p-5 bg-emerald-50 text-emerald-600 rounded-[2rem] group-hover:scale-110 transition-transform">
                 <i class="fas fa-wallet text-3xl"></i>
@@ -42,13 +42,13 @@
         @endphp
         <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 flex items-center justify-between group hover:shadow-md transition-all">
             <div>
-                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Sensor Health Status</p>
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status Kesehatan Sensor</p>
                 <h3 class="text-4xl font-black {{ $anySensorError ? 'text-red-500' : 'text-gray-800' }}">
-                    {{ $anySensorError ? 'Error Detected' : '100% Healthy' }}
+                    {{ $anySensorError ? 'Gangguan Terdeteksi' : '100% Normal' }}
                 </h3>
                 <p class="text-[10px] {{ $anySensorError ? 'text-red-400' : 'text-blue-500' }} mt-2 font-bold italic">
                     <i class="fas {{ $anySensorError ? 'fa-exclamation-triangle' : 'fa-shield-alt' }} mr-1"></i> 
-                    {{ $anySensorError ? 'Check red marked bins below' : 'All systems functioning normally' }}
+                    {{ $anySensorError ? 'Periksa wadah yang bertanda merah di bawah' : 'Semua sistem berfungsi dengan baik' }}
                 </p>
             </div>
             <div class="p-5 {{ $anySensorError ? 'bg-red-50 text-red-500 animate-pulse' : 'bg-blue-50 text-blue-500' }} rounded-[2rem] text-3xl transition-transform group-hover:rotate-12">
@@ -60,8 +60,8 @@
     <!-- MAIN SECTION: TONG SAMPAH (Visualisasi GZB-004) -->
     <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-gray-50">
         <div class="flex justify-between items-center mb-12">
-            <h3 class="text-xl font-black text-gray-800 tracking-tight"><i class="fas fa-dumpster mr-2 text-emerald-500"></i> Real-time Bin Capacity</h3>
-            <span class="text-[10px] font-bold text-gray-300 uppercase tracking-[0.2em]">Auto-refresh: Active</span>
+            <h3 class="text-xl font-black text-gray-800 tracking-tight"><i class="fas fa-dumpster mr-2 text-emerald-500"></i> Kapasitas Wadah Real-time</h3>
+            <span class="text-[10px] font-bold text-gray-300 uppercase tracking-[0.2em]">Pembaruan Otomatis: Aktif</span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -88,7 +88,7 @@
                             {{ $bin->capacity }}%
                         </span>
                         @if(!$bin->sensor_status)
-                            <span class="text-[8px] font-bold text-white bg-red-600 px-2 py-0.5 rounded-full mt-2 uppercase">Sensor Off</span>
+                            <span class="text-[8px] font-bold text-white bg-red-600 px-2 py-0.5 rounded-full mt-2 uppercase">Sensor Mati</span>
                         @endif
                     </div>
 
@@ -107,7 +107,7 @@
                             <input type="number" name="price" value="{{ $bin->price_per_kg }}" class="w-28 pl-8 pr-2 py-2.5 bg-gray-50 border-none rounded-2xl text-xs font-bold focus:ring-2 focus:ring-emerald-500 transition-all shadow-inner" placeholder="0">
                             <span class="absolute left-3 top-3 text-[10px] text-gray-400 font-black">Rp</span>
                         </div>
-                        <button type="submit" title="Update Harga" class="p-3 bg-[#0F2B26] text-white rounded-2xl hover:bg-emerald-600 transition-all shadow-md active:scale-90">
+                        <button type="submit" title="Perbarui Harga" class="p-3 bg-[#0F2B26] text-white rounded-2xl hover:bg-emerald-600 transition-all shadow-md active:scale-90">
                             <i class="fas fa-save text-xs"></i>
                         </button>
                     </form>
@@ -120,8 +120,8 @@
     <!-- Bottom Row: Recent History (GZB-006) -->
     <div class="bg-white p-8 rounded-[3rem] shadow-sm border border-gray-50">
         <div class="flex justify-between items-center mb-8 px-2">
-            <h3 class="font-black text-gray-800 tracking-tight italic">Activity Logs (GZB-006)</h3>
-            <a href="/history" class="text-[10px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest border-b-2 border-emerald-100 pb-1 transition-all">View Analytics</a>
+            <h3 class="font-black text-gray-800 tracking-tight italic">Log Aktivitas (GZB-006)</h3>
+            <a href="/history" class="text-[10px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest border-b-2 border-emerald-100 pb-1 transition-all">Lihat Analitik</a>
         </div>
         
         <div class="grid grid-cols-1 gap-3">
@@ -132,13 +132,13 @@
                         <i class="fas fa-recycle {{ $log->waste_type == 'Organik' ? 'text-emerald-500' : ($log->waste_type == 'Anorganik' ? 'text-blue-500' : 'text-amber-500') }} text-sm"></i>
                     </div>
                     <div>
-                        <p class="text-sm font-black text-gray-800">{{ $log->waste_type }} Waste Detected</p>
+                        <p class="text-sm font-black text-gray-800">Sampah {{ $log->waste_type }} Terdeteksi</p>
                         <p class="text-[10px] text-gray-400 uppercase font-bold tracking-tight">{{ $log->created_at->format('H:i:s') }} — {{ $log->created_at->diffForHumans() }}</p>
                     </div>
                 </div>
                 <div class="text-right">
                     <p class="text-sm font-black text-gray-800 tracking-tighter">{{ $log->weight }} kg</p>
-                    <p class="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Success</p>
+                    <p class="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Berhasil</p>
                 </div>
             </div>
             @empty

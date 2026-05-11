@@ -6,10 +6,10 @@
     <div class="flex justify-between items-center mb-4">
         <div>
             <h1 class="text-3xl font-black text-gray-800 tracking-tight">Pengawasan Skala Kota</h1>
-            <p class="text-sm text-gray-400 font-medium italic underline decoration-emerald-500">Macro Analysis (GZB-012) - Central TPA</p>
+            <p class="text-sm text-gray-400 font-medium italic underline decoration-emerald-500">Analisis Makro (GZB-012) - TPA Pusat</p>
         </div>
         <div class="px-4 py-2 bg-[#0F2B26] rounded-2xl shadow-lg text-[10px] font-black uppercase tracking-widest text-emerald-400 flex items-center">
-            <i class="fas fa-city mr-2"></i> Role: Admin Utama
+            <i class="fas fa-city mr-2"></i> Peran: Admin Utama
         </div>
     </div>
 
@@ -17,12 +17,12 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <!-- Total Weight -->
         <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-50 flex flex-col justify-center">
-            <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Total Sampah</p>
+            <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Total Berat Sampah</p>
             <h3 class="text-3xl font-black text-gray-800">{{ $stats['total_berat'] }} <span class="text-xs">Kg</span></h3>
         </div>
         <!-- Total Economic -->
         <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-50 flex flex-col justify-center">
-            <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Total Ekonomi</p>
+            <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Total Nilai Ekonomi</p>
             <h3 class="text-3xl font-black text-emerald-600">Rp {{ number_format($stats['ekonomi_total'], 0, ',', '.') }}</h3>
         </div>
         <!-- Total Workers -->
@@ -33,7 +33,7 @@
         <!-- Active TPS -->
         <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-50 flex flex-col justify-center">
             <p class="text-[10px] font-black text-gray-400 uppercase mb-1">TPS Aktif</p>
-            <h3 class="text-3xl font-black text-blue-500">{{ $stats['titik_tps'] }} <span class="text-xs">Points</span></h3>
+            <h3 class="text-3xl font-black text-blue-500">{{ $stats['titik_tps'] }} <span class="text-xs">Titik</span></h3>
         </div>
     </div>
 
@@ -65,11 +65,11 @@
         <div class="lg:col-span-2 space-y-6">
             <div class="bg-gradient-to-br from-[#0F2B26] to-emerald-900 p-10 rounded-[3rem] text-white shadow-xl h-full flex flex-col justify-between relative overflow-hidden">
                 <div class="z-10">
-                    <h3 class="text-2xl font-black mb-4 leading-tight">Environmental Impact<br>Summary</h3>
-                    <p class="text-sm text-emerald-200 leading-relaxed max-w-xs">Sistem SORTIR.IN telah membantu memisahkan {{ $stats['total_berat'] }} Kg sampah, meningkatkan efisiensi daur ulang sebesar 24% bulan ini.</p>
+                    <h3 class="text-2xl font-black mb-4 leading-tight">Ringkasan Dampak<br>Lingkungan</h3>
+                    <p class="text-sm text-emerald-200 leading-relaxed max-w-xs">Sistem SORTIR.IN telah membantu memisahkan {{ $stats['total_berat'] }} Kg sampah, meningkatkan efisiensi daur ulang sebesar 24% pada bulan ini.</p>
                 </div>
                 <div class="mt-10 flex gap-4 z-10">
-                    <button class="bg-emerald-500 hover:bg-emerald-400 px-6 py-3 rounded-2xl text-xs font-black transition">Download Report (PDF)</button>
+                    <button class="bg-emerald-500 hover:bg-emerald-400 px-6 py-3 rounded-2xl text-xs font-black transition">Unduh Laporan (PDF)</button>
                 </div>
                 <!-- Decoration -->
                 <i class="fas fa-leaf absolute -right-10 -bottom-10 text-[15rem] opacity-10"></i>
