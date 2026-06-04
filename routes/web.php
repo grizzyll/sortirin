@@ -32,6 +32,7 @@ Route::middleware(['auth', 'App\Http\Middleware\CheckRole:tps'])->group(function
     
     Route::get('/schedules', [ScheduleController::class, 'index'])->name('schedules.index');
     Route::get('/schedules/download-pdf', [ScheduleController::class, 'exportPdf'])->name('schedules.pdf');
+    Route::post('/schedules', [ScheduleController::class, 'store'])->name('schedules.store');
     
     
     Route::post('/update-harga/{id}', [DashboardController::class, 'updateHarga'])->name('update.harga');
