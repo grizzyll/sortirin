@@ -5,10 +5,11 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use PhpMqtt\Client\MqttClient;
 use PhpMqtt\Client\ConnectionSettings;
+use App\Models\SensorLog; // <-- DI SINI: Memanggil Model kamu (Sesuaikan dengan nama Model aslimu!)
 
 class SubscribeToMqtt extends Command
 {
-    // Ini perintah yang dijalankan di terminal
+    
     protected $signature = 'mqtt:subscribe';
     protected $description = 'Memantau data masuk dari alat sortir fisik via MQTT';
 
@@ -31,15 +32,20 @@ class SubscribeToMqtt extends Command
             $mqtt->connect($settings, true);
             $this->info("Berhasil Terhubung! Menunggu data sensor...");
 
-            // Mendengarkan papan pengumuman/topic 'sortirin/sensor'
+
             $mqtt->subscribe('sortirin/sensor', function ($topic, $message) {
                 $this->info("Ada data masuk dari topic [{$topic}]: {$message}");
                 
-                // DI SINI KAMU BISA MASUKKAN LOGIKA SIMPAN DATA KAMU NANTI
+
+                SensorLog::create([
+                    'status' => $message, // <-- Ganti 'status' dengan nama kolom database kamu!
+                ]);
+
+                $this->info("Status: Berhasil disimpan ke database!");
                 
             }, 0);
 
-            // Loop terus-menerus agar VPS stand-by mendengarkan
+        
             $mqtt->loop(true);
 
         } catch (\Exception $e) {
