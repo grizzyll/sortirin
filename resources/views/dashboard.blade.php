@@ -3,7 +3,6 @@
 @section('content')
 <div class="space-y-6 p-2">
 
-    <!-- 1. NOTIFIKASI (Floating & Minimalis) -->
     @if(session('success'))
         <div class="fixed top-10 right-10 z-50 bg-[#0F2B26] text-white px-5 py-3 rounded-2xl shadow-2xl border border-emerald-500/20 flex items-center gap-4 animate-fade-in">
             <div class="bg-emerald-500 p-1.5 rounded-full text-[8px]">
@@ -13,7 +12,6 @@
         </div>
     @endif
 
-    <!-- 2. HEADER SECTION -->
     <div class="flex justify-between items-center mb-2">
         <div>
             <h1 class="text-2xl font-black text-gray-800 tracking-tight">Operasional TPS</h1>
@@ -28,9 +26,7 @@
         </div>
     </div>
 
-    <!-- 3. WIDGET STATISTIK -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Card Nilai Ekonomi -->
         <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-50 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
             <div>
                 <p class="text-[9px] font-black text-gray-300 uppercase tracking-[0.3em] mb-1">Total Estimasi Ekonomi</p>
@@ -46,7 +42,6 @@
             </div>
         </div>
 
-        <!-- Card Kesehatan Sensor -->
         @php $anySensorError = $bins->where('sensor_status', false)->count() > 0; @endphp
         <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-50 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
             <div>
@@ -65,7 +60,6 @@
         </div>
     </div>
 
-    <!-- 4. VISUALISASI KAPASITAS (REAL-TIME SINKRON) -->
     <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-gray-50">
         <div class="flex justify-between items-center mb-10 px-2">
             <h3 class="text-base font-black text-gray-800 tracking-[0.2em] uppercase flex items-center gap-2">
@@ -82,27 +76,25 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             @foreach($bins as $bin)
             @php
-                // Menentukan ID string lowercase untuk selektor JavaScript
                 $slugType = $bin->type == 'Organik' ? 'basah' : ($bin->type == 'Anorganik' ? 'kering' : 'logam');
             @endphp
             <div class="flex flex-col items-center">
-                <!-- Visual Tong (Liquid Effect) -->
                 <div class="relative w-36 h-56 bg-slate-50 border-[5px] {{ !$bin->sensor_status ? 'border-red-100 animate-pulse' : 'border-white' }} rounded-b-[3.5rem] shadow-2xl overflow-hidden flex flex-col-reverse group transition-all">
                     
-                    <!-- Filling Progress -->
-                    <div id="bar-{{ $slugType }}" class="transition-all duration-1000 ease-in-out w-full 
-                        {{ $bin->capacity > 85 ? 'bg-gradient-to-t from-red-600 to-red-400' : 
-                        ($bin->type == 'Organik' ? 'bg-gradient-to-t from-emerald-600 to-emerald-400' : 
+                    <div id="bar-{{ $slugType }}" class="transition-all duration-500 ease-in-out w-full 
+                        {{ $bin->type == 'Organik' ? 'bg-gradient-to-t from-emerald-600 to-emerald-400' : 
                         ($bin->type == 'Anorganik' ? 'bg-gradient-to-t from-blue-600 to-blue-400' : 
-                        'bg-gradient-to-t from-amber-500 to-amber-300')) }}" 
+                        'bg-gradient-to-t from-amber-500 to-amber-300') }}" 
                          style="height: {{ $bin->capacity }}%">
                         <div class="absolute top-0 left-0 w-full h-8 bg-white/20 blur-xl"></div>
                     </div>
 
-                    <!-- Persentase di Tengah -->
-                    <div class="absolute inset-0 flex flex-col items-center justify-center">
-                        <span id="persen-{{ $slugType }}" class="text-2xl font-black {{ $bin->capacity > 50 ? 'text-white' : 'text-gray-300' }} tracking-tighter drop-shadow-sm">
+                    <div class="absolute inset-0 flex flex-col items-center justify-center z-10">
+                        <span id="persen-{{ $slugType }}" class="text-2xl font-black text-gray-800 tracking-tighter drop-shadow-sm transition-colors duration-300">
                             {{ $bin->capacity }}%
+                        </span>
+                        <span id="berat-{{ $slugType }}" class="text-[10px] font-bold text-gray-400 tracking-tight mt-0.5">
+                            0.0 g
                         </span>
                         @if(!$bin->sensor_status)
                             <span class="mt-2 text-[8px] font-black bg-red-600 text-white px-2 py-0.5 rounded-full uppercase">Mati</span>
@@ -110,7 +102,6 @@
                     </div>
                 </div>
 
-                <!-- DESAIN INPUT HARGA MINIMALIS -->
                 <div class="mt-8 text-center w-full px-4 flex flex-col items-center">
                     <h4 class="font-black text-gray-800 uppercase tracking-[0.2em] text-sm mb-1">
                         @if($bin->type == 'Organik') BASAH 
@@ -119,7 +110,6 @@
                     </h4>
                     <p class="text-[8px] font-bold text-gray-300 uppercase tracking-[0.3em] mb-6">Titik Terminal: 0{{ $loop->iteration }}</p>
                     
-                    <!-- Form Harga Gaya Stripe -->
                     <form action="{{ route('update.harga', $bin->id) }}" method="POST" class="group w-full max-w-[140px] relative">
                         @csrf
                         <div class="flex items-center gap-2 border-b-2 border-gray-50 py-1 transition-all duration-300 group-focus-within:border-emerald-500 hover:border-gray-200">
@@ -137,7 +127,6 @@
         </div>
     </div>
 
-    <!-- 5. LOG AKTIVITAS TERBARU -->
     <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-gray-50">
         <div class="flex justify-between items-center mb-8 px-2">
             <h3 class="text-sm font-black text-gray-800 tracking-[0.2em] uppercase flex items-center gap-3">
@@ -164,7 +153,7 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <p class="text-lg font-black text-gray-800 tracking-tight">{{ $log->weight }} <span class="text-[9px] text-gray-300 font-bold">Kg</span></p>
+                        <p class="text-lg font-black text-gray-800 tracking-tight">{{ $log->weight }} <span class="text-[9px] text-gray-300 font-bold">g</span></p>
                         <div class="mt-0.5 flex items-center justify-end gap-1.5 text-emerald-500 font-bold text-[8px] uppercase tracking-widest">
                             <span class="h-1 w-1 bg-emerald-500 rounded-full animate-pulse"></span> Berhasil
                         </div>
@@ -180,7 +169,6 @@
     </div>
 </div>
 
-<!-- SCRIPT LIVE UPDATES FROM LOADCELL -->
 <script>
     function updateDashboardRealtime() {
         fetch('/api/live-dashboard')
@@ -192,26 +180,41 @@
 
                 // 2. Sinkronisasi Wadah BASAH
                 const persenBasah = document.getElementById('persen-basah');
-                const barBasah = document.getElementById('bar-basah');
-                if(persenBasah) persenBasah.innerText = data.berat_basah_format;
+                const beratBasah  = document.getElementById('berat-basah');
+                const barBasah    = document.getElementById('bar-basah');
+                if(persenBasah) {
+                    persenBasah.innerText = data.volume_basah + '%';
+                    persenBasah.className = data.volume_basah > 50 ? 'text-2xl font-black text-white tracking-tighter' : 'text-2xl font-black text-gray-800 tracking-tighter';
+                }
+                if(beratBasah) beratBasah.innerText = data.berat_basah_format;
                 if(barBasah) barBasah.style.height = data.volume_basah + '%'; 
 
                 // 3. Sinkronisasi Wadah KERING
                 const persenKering = document.getElementById('persen-kering');
-                const barKering = document.getElementById('bar-kering');
-                if(persenKering) persenKering.innerText = data.berat_kering_format;
+                const beratKering  = document.getElementById('berat-kering');
+                const barKering    = document.getElementById('bar-kering');
+                if(persenKering) {
+                    persenKering.innerText = data.volume_kering + '%';
+                    persenKering.className = data.volume_kering > 50 ? 'text-2xl font-black text-white tracking-tighter' : 'text-2xl font-black text-gray-800 tracking-tighter';
+                }
+                if(beratKering) beratKering.innerText = data.berat_kering_format;
                 if(barKering) barKering.style.height = data.volume_kering + '%';
 
                 // 4. Sinkronisasi Wadah LOGAM
                 const persenLogam = document.getElementById('persen-logam');
-                const barLogam = document.getElementById('bar-logam');
-                if(persenLogam) persenLogam.innerText = data.berat_logam_format;
+                const beratLogam  = document.getElementById('berat-logam');
+                const barLogam    = document.getElementById('bar-logam');
+                if(persenLogam) {
+                    persenLogam.innerText = data.volume_logam + '%';
+                    persenLogam.className = data.volume_logam > 50 ? 'text-2xl font-black text-white tracking-tighter' : 'text-2xl font-black text-gray-800 tracking-tighter';
+                }
+                if(beratLogam) beratLogam.innerText = data.berat_logam_format;
                 if(barLogam) barLogam.style.height = data.volume_logam + '%';
             })
-            .catch(error => console.error('Gagal mengambil data live Loadcell:', error));
+            .catch(error => console.error('Gagal mengambil data live API:', error));
     }
 
-    // Interval hit data setiap 2 detik sekali
+    // Hit rute API setiap 2 detik sekali untuk pembaruan data real-time
     setInterval(updateDashboardRealtime, 2000);
 </script>
 @endsection
