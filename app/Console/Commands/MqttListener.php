@@ -33,10 +33,11 @@ class MqttListener extends Command
 
         $mqtt = new MqttClient($server, $port, $clientId);
 
+        // BAGIAN YANG DI-FIX: Menggunakan setUseCleanSession() untuk mendukung library MQTT versi baru
         $connectionSettings = (new ConnectionSettings())
             ->setKeepAliveInterval(60)
             ->setConnectTimeout(10)
-            ->setCleanSession(true);
+            ->setUseCleanSession(true);
 
         $this->info("⏳ Memulai MQTT Listener SORTIR.IN... Menunggu data dari ESP32.");
 
