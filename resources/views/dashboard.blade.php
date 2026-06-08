@@ -35,7 +35,7 @@
             <div>
                 <p class="text-[9px] font-black text-gray-300 uppercase tracking-[0.3em] mb-1">Total Estimasi Ekonomi</p>
                 <h3 class="text-3xl font-black text-gray-800 tracking-tight">
-                    <span class="text-emerald-500 text-lg font-bold">Rp</span>{{ number_format($totalEkonomi, 0, ',', '.') }}
+                    <span class="text-emerald-500 text-lg font-bold">Rp</span><span id="text-ekonomi">{{ number_format($totalEkonomi, 0, ',', '.') }}</span>
                 </h3>
                 <p class="mt-2 text-[8px] text-emerald-500 font-black uppercase italic tracking-wider">
                     <i class="fas fa-sync-alt fa-spin mr-1"></i> Data diperbarui otomatis
@@ -65,7 +65,7 @@
         </div>
     </div>
 
-    <!-- 4. VISUALISASI KAPASITAS (HANYA SATU BLOK) -->
+    <!-- 4. VISUALISASI KAPASITAS (REAL-TIME SINKRON) -->
     <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-gray-50">
         <div class="flex justify-between items-center mb-10 px-2">
             <h3 class="text-base font-black text-gray-800 tracking-[0.2em] uppercase flex items-center gap-2">
@@ -81,12 +81,16 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             @foreach($bins as $bin)
+            @php
+                // Menentukan ID string lowercase untuk selektor JavaScript
+                $slugType = $bin->type == 'Organik' ? 'basah' : ($bin->type == 'Anorganik' ? 'kering' : 'logam');
+            @endphp
             <div class="flex flex-col items-center">
                 <!-- Visual Tong (Liquid Effect) -->
                 <div class="relative w-36 h-56 bg-slate-50 border-[5px] {{ !$bin->sensor_status ? 'border-red-100 animate-pulse' : 'border-white' }} rounded-b-[3.5rem] shadow-2xl overflow-hidden flex flex-col-reverse group transition-all">
                     
                     <!-- Filling Progress -->
-                    <div class="transition-all duration-1000 ease-in-out w-full 
+                    <div id="bar-{{ $slugType }}" class="transition-all duration-1000 ease-in-out w-full 
                         {{ $bin->capacity > 85 ? 'bg-gradient-to-t from-red-600 to-red-400' : 
                         ($bin->type == 'Organik' ? 'bg-gradient-to-t from-emerald-600 to-emerald-400' : 
                         ($bin->type == 'Anorganik' ? 'bg-gradient-to-t from-blue-600 to-blue-400' : 
@@ -97,7 +101,7 @@
 
                     <!-- Persentase di Tengah -->
                     <div class="absolute inset-0 flex flex-col items-center justify-center">
-                        <span class="text-3xl font-black {{ $bin->capacity > 50 ? 'text-white' : 'text-gray-300' }} tracking-tighter drop-shadow-sm">
+                        <span id="persen-{{ $slugType }}" class="text-2xl font-black {{ $bin->capacity > 50 ? 'text-white' : 'text-gray-300' }} tracking-tighter drop-shadow-sm">
                             {{ $bin->capacity }}%
                         </span>
                         @if(!$bin->sensor_status)
@@ -106,7 +110,7 @@
                     </div>
                 </div>
 
-                <!-- DESAIN INPUT HARGA MINIMALIS (Activity 13) -->
+                <!-- DESAIN INPUT HARGA MINIMALIS -->
                 <div class="mt-8 text-center w-full px-4 flex flex-col items-center">
                     <h4 class="font-black text-gray-800 uppercase tracking-[0.2em] text-sm mb-1">
                         @if($bin->type == 'Organik') BASAH 
@@ -175,4 +179,39 @@
         </div>
     </div>
 </div>
+
+<!-- SCRIPT LIVE UPDATES FROM LOADCELL -->
+<script>
+    function updateDashboardRealtime() {
+        fetch('/api/live-dashboard')
+            .then(response => response.json())
+            .then(data => {
+                // 1. Sinkronisasi Total Estimasi Ekonomi Rupiah
+                const ekonomiElem = document.getElementById('text-ekonomi');
+                if(ekonomiElem) ekonomiElem.innerText = data.total_ekonomi;
+
+                // 2. Sinkronisasi Wadah BASAH
+                const persenBasah = document.getElementById('persen-basah');
+                const barBasah = document.getElementById('bar-basah');
+                if(persenBasah) persenBasah.innerText = data.berat_basah_format;
+                if(barBasah) barBasah.style.height = data.volume_basah + '%'; 
+
+                // 3. Sinkronisasi Wadah KERING
+                const persenKering = document.getElementById('persen-kering');
+                const barKering = document.getElementById('bar-kering');
+                if(persenKering) persenKering.innerText = data.berat_kering_format;
+                if(barKering) barKering.style.height = data.volume_kering + '%';
+
+                // 4. Sinkronisasi Wadah LOGAM
+                const persenLogam = document.getElementById('persen-logam');
+                const barLogam = document.getElementById('bar-logam');
+                if(persenLogam) persenLogam.innerText = data.berat_logam_format;
+                if(barLogam) barLogam.style.height = data.volume_logam + '%';
+            })
+            .catch(error => console.error('Gagal mengambil data live Loadcell:', error));
+    }
+
+    // Interval hit data setiap 2 detik sekali
+    setInterval(updateDashboardRealtime, 2000);
+</script>
 @endsection
