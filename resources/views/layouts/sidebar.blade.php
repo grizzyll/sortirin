@@ -19,7 +19,7 @@
                 <a href="{{ route('dashboard') }}" 
                    class="flex items-center px-4 py-3 text-sm transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-white/10 rounded-2xl border border-white/10 text-white font-bold' : 'text-gray-400 hover:bg-white/5 rounded-2xl' }}">
                     <i class="fas fa-th-large w-5 text-center"></i>
-                    <span class="mx-4 font-medium">Dasbor</span>
+                    <span class="mx-4 font-medium">Dashboard</span>
                 </a>
 
                 <a href="{{ route('history.index') }}" 
