@@ -7,6 +7,7 @@ use App\Http\Controllers\WorkerController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RegionalController;
 use App\Models\Bin;
 use App\Models\Sampah;
 
@@ -15,6 +16,7 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
+Route::get('/monitoring/{slug}', [RegionalController::class, 'show'])->name('regional.show');
 // 2. ROUTE SETELAH LOGIN (Bisa diakses semua role)
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -44,6 +46,7 @@ Route::middleware(['auth', 'App\Http\Middleware\CheckRole:tpa'])->group(function
     Route::get('/tpa/dashboard', [TpaController::class, 'dashboard'])->name('tpa.dashboard');
     Route::get('/tpa/workers', [TpaController::class, 'workers'])->name('tpa.workers');
 });
+
 
 // 5. JEMBATAN API UNTUK BIAR DASHBOARD BERGERAK REAL-TIME DARI LOADCELL
 // Diletakkan di luar middleware auth agar JavaScript fetch() lancar tanpa terhadang token session login

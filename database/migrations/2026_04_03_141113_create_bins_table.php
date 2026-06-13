@@ -17,6 +17,7 @@ return new class extends Migration
         $table->integer('capacity')->default(0); // <--- Pastikan ini ada dan tulisannya benar
         $table->boolean('sensor_status')->default(true);
         $table->decimal('price_per_kg', 10, 2)->default(0);
+        $table->foreignId('location_id')->constrained()->onDelete('cascade');
         $table->timestamps();
     });
 }

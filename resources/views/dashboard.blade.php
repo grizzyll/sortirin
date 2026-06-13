@@ -15,7 +15,7 @@
     <div class="flex justify-between items-center mb-2">
         <div>
             <h1 class="text-2xl font-black text-gray-800 tracking-tight">Operasional TPS</h1>
-            <p class="text-[11px] text-gray-400 font-bold italic underline decoration-emerald-500 decoration-1 underline-offset-4">Sistem Monitoring Terpadu TPS Mulyorejo</p>
+            </p>
         </div>
         <div class="px-4 py-2 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
             <div class="relative flex h-2 w-2">
@@ -31,7 +31,8 @@
             <div>
                 <p class="text-[9px] font-black text-gray-300 uppercase tracking-[0.3em] mb-1">Total Estimasi Ekonomi</p>
                 <h3 class="text-3xl font-black text-gray-800 tracking-tight">
-                    <span class="text-emerald-500 text-lg font-bold">Rp</span><span id="text-ekonomi">{{ number_format($totalEkonomi, 0, ',', '.') }}</span>
+                    <span class="text-emerald-500 text-lg font-bold">Rp</span>
+                    <span id="text-ekonomi">{{ number_format($totalEkonomi, 0, ',', '.') }}</span>
                 </h3>
                 <p class="mt-2 text-[8px] text-emerald-500 font-black uppercase italic tracking-wider">
                     <i class="fas fa-sync-alt fa-spin mr-1"></i> Data diperbarui otomatis
@@ -60,11 +61,12 @@
         </div>
     </div>
 
+    {{-- SECTION KAPASITAS RATA-RATA --}}
     <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-gray-50">
         <div class="flex justify-between items-center mb-10 px-2">
             <h3 class="text-base font-black text-gray-800 tracking-[0.2em] uppercase flex items-center gap-2">
                 <div class="w-6 h-1 bg-emerald-500 rounded-full"></div>
-                Volume Wadah Real-Time
+                Kapasitas Rata-Rata Kota
             </h3>
             <div class="flex gap-1">
                 <div class="w-1 h-1 rounded-full bg-gray-200"></div>
@@ -74,66 +76,69 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            @foreach($bins as $bin)
+            {{-- LOOP BERDASARKAN TIPE, BUKAN $bins --}}
+            @foreach(['Organik', 'Anorganik', 'Logam'] as $tipe)
             @php
-                $slugType = $bin->type == 'Organik' ? 'basah' : ($bin->type == 'Anorganik' ? 'kering' : 'logam');
+                $data      = $avgKapasitas[$tipe] ?? null;
+                $kapasitas = $data ? round($data->avg_capacity) : 0;
+                $slugType  = $tipe == 'Organik' ? 'basah' : ($tipe == 'Anorganik' ? 'kering' : 'logam');
+                $warnaBar  = $tipe == 'Organik'
+                    ? 'bg-gradient-to-t from-emerald-600 to-emerald-400'
+                    : ($tipe == 'Anorganik'
+                        ? 'bg-gradient-to-t from-blue-600 to-blue-400'
+                        : 'bg-gradient-to-t from-amber-500 to-amber-300');
+                $labelTipe = $tipe == 'Organik' ? 'BASAH' : ($tipe == 'Anorganik' ? 'KERING' : 'LOGAM');
             @endphp
+
             <div class="flex flex-col items-center">
-                <div class="relative w-36 h-56 bg-slate-50 border-[5px] {{ !$bin->sensor_status ? 'border-red-100 animate-pulse' : 'border-white' }} rounded-b-[3.5rem] shadow-2xl overflow-hidden flex flex-col-reverse group transition-all">
-                    
-                    <div id="bar-{{ $slugType }}" class="transition-all duration-500 ease-in-out w-full 
-                        {{ $bin->type == 'Organik' ? 'bg-gradient-to-t from-emerald-600 to-emerald-400' : 
-                        ($bin->type == 'Anorganik' ? 'bg-gradient-to-t from-blue-600 to-blue-400' : 
-                        'bg-gradient-to-t from-amber-500 to-amber-300') }}" 
-                         style="height: {{ $bin->capacity }}%">
+                <div class="relative w-36 h-56 bg-slate-50 border-[5px] border-white rounded-b-[3.5rem] shadow-2xl overflow-hidden flex flex-col-reverse group transition-all">
+
+                    <div id="bar-{{ $slugType }}"
+                         class="transition-all duration-500 ease-in-out w-full {{ $warnaBar }}"
+                         style="height: {{ $kapasitas }}%">
                         <div class="absolute top-0 left-0 w-full h-8 bg-white/20 blur-xl"></div>
                     </div>
 
                     <div class="absolute inset-0 flex flex-col items-center justify-center z-10">
-                        <span id="persen-{{ $slugType }}" class="text-2xl font-black text-gray-800 tracking-tighter drop-shadow-sm transition-colors duration-300">
-                            {{ $bin->capacity }}%
+                        <span id="persen-{{ $slugType }}"
+                              class="text-2xl font-black text-gray-800 tracking-tighter drop-shadow-sm transition-colors duration-300">
+                            {{ $kapasitas }}%
                         </span>
-                        <span id="berat-{{ $slugType }}" class="text-[10px] font-bold text-gray-400 tracking-tight mt-0.5">
+                        <span id="berat-{{ $slugType }}"
+                              class="text-[10px] font-bold text-gray-400 tracking-tight mt-0.5">
                             0.0 g
                         </span>
-                        @if(!$bin->sensor_status)
-                            <span class="mt-2 text-[8px] font-black bg-red-600 text-white px-2 py-0.5 rounded-full uppercase">Mati</span>
-                        @endif
                     </div>
                 </div>
 
                 <div class="mt-8 text-center w-full px-4 flex flex-col items-center">
                     <h4 class="font-black text-gray-800 uppercase tracking-[0.2em] text-sm mb-1">
-                        @if($bin->type == 'Organik') BASAH 
-                        @elseif($bin->type == 'Anorganik') KERING 
-                        @else {{ $bin->type }} @endif
+                        {{ $labelTipe }}
                     </h4>
-                    <p class="text-[8px] font-bold text-gray-300 uppercase tracking-[0.3em] mb-6">Titik Terminal: 0{{ $loop->iteration }}</p>
-                    
-                    <form action="{{ route('update.harga', $bin->id) }}" method="POST" class="group w-full max-w-[140px] relative">
-                        @csrf
-                        <div class="flex items-center gap-2 border-b-2 border-gray-50 py-1 transition-all duration-300 group-focus-within:border-emerald-500 hover:border-gray-200">
-                            <span class="text-[9px] font-black text-emerald-600 tracking-tighter">RP</span>
-                            <input type="number" name="price" value="{{ number_format($bin->price_per_kg, 0, '', '') }}" 
-                                class="w-full bg-transparent border-none p-0 text-sm font-black text-gray-700 focus:ring-0 placeholder-gray-200" placeholder="0">
-                            <button type="submit" class="text-gray-300 hover:text-emerald-600 transition-colors transform active:scale-90">
-                                <i class="fas fa-check-circle text-sm"></i>
-                            </button>
-                        </div>
-                    </form>
+                    <p class="text-[8px] font-bold text-gray-300 uppercase tracking-[0.3em] mb-6">
+                        Rata-rata Seluruh Wilayah
+                    </p>
+                    {{-- 
+                        CATATAN: form update harga dihapus dari sini karena ini tampilan RATA-RATA,
+                        bukan per-bin. Update harga sebaiknya dilakukan di halaman per-lokasi/per-bin.
+                        Kalau tetap mau di sini, kamu harus rethink flow-nya dulu.
+                    --}}
                 </div>
             </div>
             @endforeach
         </div>
     </div>
 
+    {{-- SECTION LOG PEMILAHAN --}}
     <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-gray-50">
         <div class="flex justify-between items-center mb-8 px-2">
             <h3 class="text-sm font-black text-gray-800 tracking-[0.2em] uppercase flex items-center gap-3">
-                <div class="w-6 h-1 bg-emerald-500 rounded-full italic"></div>
+                <div class="w-6 h-1 bg-emerald-500 rounded-full"></div>
                 Log Pemilahan Terkini
             </h3>
-            <a href="/history" class="text-[9px] font-black text-emerald-600 hover:text-[#0F2B26] uppercase tracking-widest border-b border-emerald-100 pb-0.5 transition-all">Pusat Analitik</a>
+            <a href="/history" class="text-[9px] font-black text-emerald-600 hover:text-[#0F2B26] uppercase tracking-widest border-b border-emerald-100 pb-0.5 transition-all">
+                Pusat Analitik
+            </a>
         </div>
 
         <div class="grid grid-cols-1 gap-3">
@@ -145,15 +150,23 @@
                         </div>
                         <div>
                             <p class="text-[11px] font-black text-gray-800 uppercase tracking-tight">
-                                Sampah @if($log->waste_type == 'Organik') Basah @elseif($log->waste_type == 'Anorganik') Kering @else Logam @endif Terdeteksi
+                                Sampah
+                                @if($log->waste_type == 'Organik') Basah
+                                @elseif($log->waste_type == 'Anorganik') Kering
+                                @else Logam @endif
+                                Terdeteksi
                             </p>
                             <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">
-                                {{ $log->created_at->format('H:i:s') }} WIB <span class="mx-2 text-gray-200">|</span> {{ $log->created_at->diffForHumans() }}
+                                {{ $log->created_at->format('H:i:s') }} WIB
+                                <span class="mx-2 text-gray-200">|</span>
+                                {{ $log->created_at->diffForHumans() }}
                             </p>
                         </div>
                     </div>
                     <div class="text-right">
-                        <p class="text-lg font-black text-gray-800 tracking-tight">{{ $log->weight }} <span class="text-[9px] text-gray-300 font-bold">g</span></p>
+                        <p class="text-lg font-black text-gray-800 tracking-tight">
+                            {{ $log->weight }} <span class="text-[9px] text-gray-300 font-bold">g</span>
+                        </p>
                         <div class="mt-0.5 flex items-center justify-end gap-1.5 text-emerald-500 font-bold text-[8px] uppercase tracking-widest">
                             <span class="h-1 w-1 bg-emerald-500 rounded-full animate-pulse"></span> Berhasil
                         </div>
@@ -174,47 +187,48 @@
         fetch('/api/live-dashboard')
             .then(response => response.json())
             .then(data => {
-                // 1. Sinkronisasi Total Estimasi Ekonomi Rupiah
                 const ekonomiElem = document.getElementById('text-ekonomi');
-                if(ekonomiElem) ekonomiElem.innerText = data.total_ekonomi;
+                if (ekonomiElem) ekonomiElem.innerText = data.total_ekonomi;
 
-                // 2. Sinkronisasi Wadah BASAH
                 const persenBasah = document.getElementById('persen-basah');
                 const beratBasah  = document.getElementById('berat-basah');
                 const barBasah    = document.getElementById('bar-basah');
-                if(persenBasah) {
+                if (persenBasah) {
                     persenBasah.innerText = data.volume_basah + '%';
-                    persenBasah.className = data.volume_basah > 50 ? 'text-2xl font-black text-white tracking-tighter' : 'text-2xl font-black text-gray-800 tracking-tighter';
+                    persenBasah.className = data.volume_basah > 50
+                        ? 'text-2xl font-black text-white tracking-tighter'
+                        : 'text-2xl font-black text-gray-800 tracking-tighter';
                 }
-                if(beratBasah) beratBasah.innerText = data.berat_basah_format;
-                if(barBasah) barBasah.style.height = data.volume_basah + '%'; 
+                if (beratBasah) beratBasah.innerText = data.berat_basah_format;
+                if (barBasah) barBasah.style.height = data.volume_basah + '%';
 
-                // 3. Sinkronisasi Wadah KERING
                 const persenKering = document.getElementById('persen-kering');
                 const beratKering  = document.getElementById('berat-kering');
                 const barKering    = document.getElementById('bar-kering');
-                if(persenKering) {
+                if (persenKering) {
                     persenKering.innerText = data.volume_kering + '%';
-                    persenKering.className = data.volume_kering > 50 ? 'text-2xl font-black text-white tracking-tighter' : 'text-2xl font-black text-gray-800 tracking-tighter';
+                    persenKering.className = data.volume_kering > 50
+                        ? 'text-2xl font-black text-white tracking-tighter'
+                        : 'text-2xl font-black text-gray-800 tracking-tighter';
                 }
-                if(beratKering) beratKering.innerText = data.berat_kering_format;
-                if(barKering) barKering.style.height = data.volume_kering + '%';
+                if (beratKering) beratKering.innerText = data.berat_kering_format;
+                if (barKering) barKering.style.height = data.volume_kering + '%';
 
-                // 4. Sinkronisasi Wadah LOGAM
                 const persenLogam = document.getElementById('persen-logam');
                 const beratLogam  = document.getElementById('berat-logam');
                 const barLogam    = document.getElementById('bar-logam');
-                if(persenLogam) {
+                if (persenLogam) {
                     persenLogam.innerText = data.volume_logam + '%';
-                    persenLogam.className = data.volume_logam > 50 ? 'text-2xl font-black text-white tracking-tighter' : 'text-2xl font-black text-gray-800 tracking-tighter';
+                    persenLogam.className = data.volume_logam > 50
+                        ? 'text-2xl font-black text-white tracking-tighter'
+                        : 'text-2xl font-black text-gray-800 tracking-tighter';
                 }
-                if(beratLogam) beratLogam.innerText = data.berat_logam_format;
-                if(barLogam) barLogam.style.height = data.volume_logam + '%';
+                if (beratLogam) beratLogam.innerText = data.berat_logam_format;
+                if (barLogam) barLogam.style.height = data.volume_logam + '%';
             })
             .catch(error => console.error('Gagal mengambil data live API:', error));
     }
 
-    // Hit rute API setiap 2 detik sekali untuk pembaruan data real-time
     setInterval(updateDashboardRealtime, 2000);
 </script>
 @endsection

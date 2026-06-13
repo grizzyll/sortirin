@@ -5,43 +5,35 @@ namespace App\Http\Controllers;
 use App\Models\Bin;
 use App\Models\Worker;
 use App\Models\SortingLog;
+use App\Models\Location; // Pastikan Model Location di-import
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index()
-    {
-        // 1. Mengambil data tong sampah (GZB-004)
-        $bins = Bin::all();
+public function index()
+{
+    // 1. Lokasi + bins per wilayah
+    $locations = \App\Models\Location::with('bins')->get();
 
-        // 2. Mengambil log pemilahan terakhir (GZB-006)
-        // Karena sudah di-import di atas, cukup tulis SortingLog::
-        $recentLogs = SortingLog::latest()->take(5)->get();
+    // 2. Semua bins flat (untuk cek sensor)
+    $bins = \App\Models\Bin::all();
 
-        // 3. Logika Estimasi Nilai Ekonomi (Activity 13)
-        // Rumus: Kapasitas(%) * 0.5kg (asumsi) * Harga/Kg
-        $totalEkonomi = 0;
-        foreach($bins as $bin) {
-            // Kita bagi 100 jika capacity adalah 0-100 agar menjadi persentase decimal
-            $totalEkonomi += (($bin->capacity / 100) * 0.5 * $bin->price_per_kg);
-        }
+    // 3. Log terbaru
+    $recentLogs = \App\Models\SortingLog::latest()->take(5)->get();
 
-        return view('dashboard', compact('bins', 'recentLogs', 'totalEkonomi'));
+    // 4. Total ekonomi — INI YANG KAMU HAPUS
+    $totalEkonomi = 0;
+    foreach($bins as $bin) {
+        $beratDalamKg = $bin->capacity / 10;
+        $totalEkonomi += ($beratDalamKg * $bin->price_per_kg);
     }
 
-    public function updateHarga(Request $request, $id)
-    {
-        // Validasi: Harga harus angka dan minimal 0
-        $request->validate([
-            'price' => 'required|numeric|min:0'
-        ]);
+    // 5. Rata-rata kapasitas per tipe (fix yang aku kasih)
+    $avgKapasitas = \App\Models\Bin::selectRaw('type, AVG(capacity) as avg_capacity, AVG(price_per_kg) as avg_price')
+        ->groupBy('type')
+        ->get()
+        ->keyBy('type');
 
-        $bin = Bin::findOrFail($id);
-        $bin->update([
-            'price_per_kg' => $request->price
-        ]);
-
-        // Kirim notifikasi sukses ke view
-        return back()->with('success', 'Harga ' . $bin->type . ' berhasil diperbarui!');
-    }
+    return view('dashboard', compact('locations', 'bins', 'recentLogs', 'totalEkonomi', 'avgKapasitas'));
+}
 }
