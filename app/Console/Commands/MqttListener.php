@@ -1,115 +1,98 @@
 <?php
-
 namespace App\Console\Commands;
-
 use Illuminate\Console\Command;
 use PhpMqtt\Client\MqttClient;
 use PhpMqtt\Client\ConnectionSettings;
 use App\Models\Bin;
-use App\Models\Sampah;
+use App\Models\SortingLog;
+use App\Models\Location;
 
 class MqttListener extends Command
 {
-    /**
-     * Nama perintah yang dijalankan di terminal hitam VPS.
-     * Dapat dipanggil dengan: php artisan mqtt:listen
-     */
     protected $signature = 'mqtt:listen';
-
-    /**
-     * Deskripsi perintah di sistem artisan.
-     */
     protected $description = 'Memantau data masuk dari alat sortir fisik via MQTT secara Live';
 
-    /**
-     * Eksekusi perintah console.
-     */
     public function handle()
     {
-        // 1. Pengaturan Koneksi Broker MQTT (Menggunakan EMQX Broker)
         $server   = 'broker.emqx.io';
         $port     = 1883;
         $clientId = 'laravel_sortirin_listener_' . rand(1, 999);
-
         $mqtt = new MqttClient($server, $port, $clientId);
-
-        // BAGIAN YANG DI-FIX: Menghapus total baris session agar berjalan mulus tanpa error method di semua versi library
         $connectionSettings = (new ConnectionSettings())
             ->setKeepAliveInterval(60)
             ->setConnectTimeout(10);
 
         $this->info("⏳ Memulai MQTT Listener SORTIR.IN... Menunggu data dari ESP32.");
-
-        // Hubungkan Laravel ke Broker MQTT
         $mqtt->connect($connectionSettings, true);
 
-        /**
-         * 2. Subscribe ke Topik Alat
-         * PASTIKAN nama topik ini ("iot/sortirin/data") sama persis dengan yang kamu ketik di kodingan Arduino/ESP32 kamu.
-         */
-        $mqtt->subscribe('iot/sortirin/data', function ($topic, $message) {
-            // Tampilkan data mentah di terminal VPS agar bisa dipantau manual
-            $this->info("📥 Data Masuk dari Alat: " . $message);
+        $bandulan = Location::where('name', 'Bandulan')->first();
+        if (!$bandulan) {
+            $this->error("❌ Location Bandulan tidak ditemukan di database!");
+            return;
+        }
 
-            // 3. Decode data JSON yang dikirim oleh ESP32
+        // TOPIC 1: sortirin/loadcell - update kapasitas bin realtime dari loadcell
+        $mqtt->subscribe('sortirin/loadcell', function ($topic, $message) use ($bandulan) {
+            $data = json_decode($message, true);
+            if (!isset($data['lc1']) && !isset($data['lc2']) && !isset($data['lc3'])) return;
+
+            $maxKapasitas = 200;
+
+            $mapping = [
+                'lc1' => 'Logam',
+                'lc2' => 'Anorganik',
+                'lc3' => 'Organik',
+            ];
+
+            foreach ($mapping as $lc => $dbType) {
+                if (!isset($data[$lc])) continue;
+                $berat = (float)$data[$lc];
+
+                $bin = Bin::where('type', $dbType)
+                          ->where('location_id', $bandulan->id)
+                          ->first();
+
+                if ($bin) {
+                    $kapasitasBaru = min(round(($berat / $maxKapasitas) * 100), 100);
+                    $bin->update(['capacity' => $kapasitasBaru]);
+                }
+            }
+
+            $this->info("🔄 Kapasitas bin diperbarui dari loadcell.");
+        }, 0);
+
+        // TOPIC 2: sortirin/sensor - catat log sortir per event
+        $mqtt->subscribe('sortirin/sensor', function ($topic, $message) use ($bandulan) {
+            $this->info("📥 Data Masuk dari Alat: " . $message);
             $data = json_decode($message, true);
 
-            // Validasi apakah format JSON dari ESP32 valid dan memiliki isi data status & berat
             if (isset($data['status']) && isset($data['berat'])) {
-                $status = strtolower($data['status']); // 'organik', 'anorganik', atau 'logam'
+                $status = strtolower($data['status']);
                 $berat  = (float)$data['berat'];
 
-                // 4. Petakan tipe dari ESP32 agar cocok dengan kolom 'type' di tabel `bins` database-mu
-                $dbType = '';
+                $dbType     = '';
                 $hargaPerKg = 0;
 
-                if ($status === 'organik') {
-                    $dbType = 'Organik';
-                    $hargaPerKg = 2000; // Harga default per Kg sesuai database kamu
+                if ($status === 'logam') {
+                    $dbType = 'Logam'; $hargaPerKg = 12000;
+                } elseif ($status === 'organik') {
+                    $dbType = 'Organik'; $hargaPerKg = 2000;
                 } elseif ($status === 'anorganik') {
-                    $dbType = 'Anorganik';
-                    $hargaPerKg = 5000;
-                } elseif ($status === 'logam') {
-                    $dbType = 'Logam';
-                    $hargaPerKg = 12000;
+                    $dbType = 'Anorganik'; $hargaPerKg = 5000;
                 }
 
                 if ($dbType !== '') {
-                    // 5. Hitung Persentase Kapasitas Wadah Fisik
-                    // Sesuaikan angka 500 ini dengan kapasitas beban maksimal (dalam gram) wadah aslimu nanti
-                    $maxKapasitas = 500; 
-                    $persentaseBaru = min(round(($berat / $maxKapasitas) * 100), 100);
-
-                    // Batasi agar persentase tidak minus jika timbangan loadcell sedikit tidak stabil
-                    if ($persentaseBaru < 0) {
-                        $persentaseBaru = 0;
-                    }
-
-                    // 6. UPDATE TABEL `bins` (Untuk mengubah visual tabung di dashboard secara live)
-                    Bin::where('type', $dbType)->update([
-                        'capacity' => $persentaseBaru
+                    SortingLog::create([
+                        'waste_type' => $dbType,
+                        'weight'     => $berat,
                     ]);
-                    $this->comment("   ↳ Kategori {$dbType} diperbarui menjadi {$persentaseBaru}% di tabel bins.");
 
-                    // 7. INSERT TABEL `sampahs` (Untuk mencatat log riwayat transaksi & grafik)
-                    // Hitung nilai ekonomi sampah yang masuk saat itu juga
-                    $nilaiEkonomi = ($berat / 1000) * $hargaPerKg; // rumus: (berat gram / 1000) * harga per kg
-
-                    Sampah::create([
-                        'status'        => $status, // menyimpan 'organik', 'anorganik', atau 'logam'
-                        'berat'         => $berat,  // menyimpan data gram
-                        'nilai_ekonomi' => $nilaiEkonomi,
-                        'created_at'    => now(),
-                        'updated_at'    => now()
-                    ]);
-                    $this->question("   ↳ Transaksi baru sukses dicatat ke log tabel sampahs! (Nilai: Rp " . number_format($nilaiEkonomi, 0, ',', '.') . ")");
+                    $nilaiEkonomi = ($berat / 1000) * $hargaPerKg;
+                    $this->question("   ↳ Log dicatat! Nilai ekonomi: Rp " . number_format($nilaiEkonomi, 0, ',', '.'));
                 }
-            } else {
-                $this->error("⚠️ Format JSON dari ESP32 tidak valid atau kolom tidak lengkap!");
             }
         }, 0);
 
-        // Menjaga agar perintah terminal terus berjalan (looping) mendengarkan data tanpa henti
         $mqtt->loop(true);
     }
 }

@@ -13,6 +13,10 @@
     @endif
 
     <div class="flex justify-between items-center mb-2">
+         <button onclick="resetBins()"
+    class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-[9px] font-black uppercase tracking-widest rounded-2xl transition-all">
+    <i class="fas fa-trash-alt mr-1"></i> Kosongkan Wadah
+</button>
         <div>
             <h1 class="text-2xl font-black text-gray-800 tracking-tight">Operasional TPS</h1>
             </p>
@@ -106,7 +110,7 @@
                         </span>
                         <span id="berat-{{ $slugType }}"
                               class="text-[10px] font-bold text-gray-400 tracking-tight mt-0.5">
-                            0.0 g
+                            {{ number_format($data->avg_weight ?? 0, 1) }} g
                         </span>
                     </div>
                 </div>
@@ -228,7 +232,27 @@
             })
             .catch(error => console.error('Gagal mengambil data live API:', error));
     }
+             function resetBins() {
+    if (!confirm('Yakin ingin mengosongkan semua wadah?')) return;
+    
+    fetch('/reset-bins', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('Semua wadah berhasil dikosongkan!');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
 
-    setInterval(updateDashboardRealtime, 2000);
+    setInterval(updateDashboardRealtime, 1000);
+updateDashboardRealtime();
 </script>
 @endsection
