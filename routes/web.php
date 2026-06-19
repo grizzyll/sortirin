@@ -11,7 +11,7 @@ use App\Http\Controllers\RegionalController;
 use App\Models\Bin;
 
 // 1. ROUTE UTAMA
-Route::get('/', function () {
+Route::get('/welcome', function () {
     return redirect('/welcome');
 });
 
