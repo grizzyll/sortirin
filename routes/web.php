@@ -12,7 +12,7 @@ use App\Models\Bin;
 
 // 1. ROUTE UTAMA
 Route::get('/', function () {
-    return redirect('/login');
+    return redirect('/welcome');
 });
 
 Route::get('/monitoring/{slug}', [RegionalController::class, 'show'])->name('regional.show');
